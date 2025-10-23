@@ -28,13 +28,16 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
     }
 
     public function boot(): void
-    {
-        $this->publishes([
-            __DIR__.'/../config/luckycode.php' => config_path('luckycode.php'),
-        ], 'config');
+{
+    $apiRoutesPath = base_path('routes/api.php');
+    $packageRoutes = file_get_contents(__DIR__.'/../routes/api.php');
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+    // Append your routes if not already added
+    if (strpos(file_get_contents($apiRoutesPath), 'LuckyCode routes') === false) {
+        file_put_contents($apiRoutesPath, PHP_EOL.PHP_EOL.'// LuckyCode routes'.PHP_EOL.$packageRoutes, FILE_APPEND);
     }
+}
+
 
     public function provides(): array
     {
