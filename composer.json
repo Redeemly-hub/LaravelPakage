@@ -1,5 +1,5 @@
 {
-  "name": "luckycode/integration-helper",
+  "name": "luckycode/package",
   "description": "Redeemly LuckyCode Integration Helper: framework-agnostic PHP client with optional Laravel bridge",
   "type": "library",
   "license": "MIT",
