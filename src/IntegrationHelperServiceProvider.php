@@ -4,6 +4,7 @@ namespace LuckyCode\IntegrationHelper;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Support\Facades\File;
 use Psr\Log\LoggerInterface;
 use LuckyCode\IntegrationHelper\Services\Contracts\LuckyCodeServiceContract;
 use LuckyCode\IntegrationHelper\Services\LuckyCodeService;
@@ -12,8 +13,10 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/luckycode.php', 'luckycode');
+        // دمج إعدادات الباكج مع إعدادات المشروع
+        $this->mergeConfigFrom(_DIR_.'/../config/luckycode.php', 'luckycode');
 
+        // ربط LuckyCodeServiceContract بالخدمة الفعلية
         $this->app->bind(LuckyCodeServiceContract::class, function ($app) {
             /** @var LoggerInterface|null $logger */
             $logger = $app->has(LoggerInterface::class) ? $app->get(LoggerInterface::class) : null;
@@ -28,20 +31,38 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
     }
 
     public function boot(): void
-{
-    $apiRoutesPath = base_path('routes/api.php');
-    $packageRoutes = file_get_contents(__DIR__.'/../routes/api.php');
+    {
+        // نشر ملف config للبروجيكت
+        $this->publishes([
+            _DIR_.'/../config/luckycode.php' => config_path('luckycode.php'),
+        ], 'config');
 
-    // Append your routes if not already added
-    if (strpos(file_get_contents($apiRoutesPath), 'LuckyCode routes') === false) {
-        file_put_contents($apiRoutesPath, PHP_EOL.PHP_EOL.'// LuckyCode routes'.PHP_EOL.$packageRoutes, FILE_APPEND);
+        // إنشاء ملف routes/luckycode.php تلقائيًا إذا لم يكن موجود
+        $routePath = base_path('routes/luckycode.php');
+        if (!File::exists($routePath)) {
+            File::put($routePath, <<<PHP
+<?php
+use Illuminate\Support\Facades\Route;
+use LuckyCode\IntegrationHelper\Http\Controllers\LuckyCodeController;
+
+Route::prefix('api/lucky-code')->group(function () {
+    Route::post('pull', [LuckyCodeController::class, 'pullCode']);
+    Route::post('reveal', [LuckyCodeController::class, 'revealCode']);
+    Route::post('redeem', [LuckyCodeController::class, 'redeemCode']);
+    Route::post('multi-pull', [LuckyCodeController::class, 'multiPull']);
+    Route::get('check-serialcode', [LuckyCodeController::class, 'checkSerialCode']);
+    Route::get('customer-log', [LuckyCodeController::class, 'getCustomersLog']);
+});
+PHP
+            );
+        }
+
+        // تحميل المسارات من الملف المنشأ
+        $this->loadRoutesFrom($routePath);
     }
-}
-
 
     public function provides(): array
     {
         return [LuckyCodeServiceContract::class];
     }
 }
-
