@@ -14,7 +14,7 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
     public function register(): void
     {
         // دمج إعدادات الباكج مع إعدادات المشروع
-        $this->mergeConfigFrom(_DIR_.'/../config/luckycode.php', 'luckycode');
+$this->mergeConfigFrom(__DIR__.'/../config/luckycode.php', 'luckycode');
 
 
         // ربط LuckyCodeServiceContract بالخدمة الفعلية
@@ -35,7 +35,7 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
     {
         // نشر ملف config للبروجيكت
         $this->publishes([
-            _DIR_.'/../config/luckycode.php' => config_path('luckycode.php'),
+            __DIR__.'/../config/luckycode.php' => config_path('luckycode.php'),
         ], 'config');
     
         // إنشاء ملف routes/luckycode.php تلقائيًا إذا لم يكن موجود
