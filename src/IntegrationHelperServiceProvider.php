@@ -16,6 +16,7 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
         // دمج إعدادات الباكج مع إعدادات المشروع
         $this->mergeConfigFrom(_DIR_.'/../config/luckycode.php', 'luckycode');
 
+
         // ربط LuckyCodeServiceContract بالخدمة الفعلية
         $this->app->bind(LuckyCodeServiceContract::class, function ($app) {
             /** @var LoggerInterface|null $logger */
@@ -36,31 +37,33 @@ class IntegrationHelperServiceProvider extends ServiceProvider implements Deferr
         $this->publishes([
             _DIR_.'/../config/luckycode.php' => config_path('luckycode.php'),
         ], 'config');
-
+    
         // إنشاء ملف routes/luckycode.php تلقائيًا إذا لم يكن موجود
-        $routePath = base_path('routes/luckycode.php');
-        if (!File::exists($routePath)) {
-            File::put($routePath, <<<PHP
-<?php
-use Illuminate\Support\Facades\Route;
-use LuckyCode\IntegrationHelper\Http\Controllers\LuckyCodeController;
+        $apiFile = base_path('routes/api.php');
 
-Route::prefix('api/lucky-code')->group(function () {
-    Route::post('pull', [LuckyCodeController::class, 'pullCode']);
-    Route::post('reveal', [LuckyCodeController::class, 'revealCode']);
-    Route::post('redeem', [LuckyCodeController::class, 'redeemCode']);
-    Route::post('multi-pull', [LuckyCodeController::class, 'multiPull']);
-    Route::get('check-serialcode', [LuckyCodeController::class, 'checkSerialCode']);
-    Route::get('customer-log', [LuckyCodeController::class, 'getCustomersLog']);
-});
-PHP
-            );
+        $routeCode = <<<PHP
+    
+    // LuckyCode package routes
+    use LuckyCode\IntegrationHelper\Http\Controllers\LuckyCodeController;
+    
+    Route::prefix('lucky-code')->group(function () {
+        Route::post('pull', [LuckyCodeController::class, 'pullCode']);
+        Route::post('reveal', [LuckyCodeController::class, 'revealCode']);
+        Route::post('redeem', [LuckyCodeController::class, 'redeemCode']);
+        Route::post('multi-pull', [LuckyCodeController::class, 'multiPull']);
+        Route::get('check-serialcode', [LuckyCodeController::class, 'checkSerialCode']);
+        Route::get('customer-log', [LuckyCodeController::class, 'getCustomersLog']);
+    });
+    PHP;
+    
+        // التأكد من عدم وجود نفس الكود مسبقًا
+        if (!str_contains(File::get($apiFile), 'LuckyCode package routes')) {
+            File::append($apiFile, $routeCode);
         }
-
-        // تحميل المسارات من الملف المنشأ
-        $this->loadRoutesFrom($routePath);
+       
+      
     }
-
+    
     public function provides(): array
     {
         return [LuckyCodeServiceContract::class];
