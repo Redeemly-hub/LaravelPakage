@@ -185,7 +185,7 @@ class LuckyCodeService implements LuckyCodeServiceContract
         if (isset($data['error'])) {
             $error = new \LuckyCode\IntegrationHelper\Support\ErrorDto(
                 $data['error']['code'] ?? null,
-                $data['error']['message'] ?? null
+                $data['error']['message']['errors'] ?? null
             );
         }
         return new ApiResponse(
