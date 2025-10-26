@@ -109,7 +109,7 @@ class LuckyCodeService implements LuckyCodeServiceContract
     public function getCustomersLog(CustomerPakageLogQuery $query): ApiResponse
     {
         $token = $this->ensureValidToken();
-        return $this->getJson('/api/v1/lucky-code-adapter/customerpakage-log', [
+        return $this->getJson('/api/v1/lucky-code-adapter/customer-log', [
             'page' => $query->page,
             'pageSize' => $query->pageSize,
             'customerRef' => $query->customerRef,
@@ -142,7 +142,9 @@ class LuckyCodeService implements LuckyCodeServiceContract
             ]);
 
             if ($httpCode >= 400) {
-                return new ApiResponse(false, null, error: new \LuckyCode\IntegrationHelper\Support\ErrorDto('http_error', "HTTP {$httpCode}: {$body}"));
+                // Extract error code and message from the response body
+                $errorData = $this->extractErrorData($body, $httpCode);
+                return new ApiResponse(false, null, error: new \LuckyCode\IntegrationHelper\Support\ErrorDto($errorData['code'], $errorData['message']));
             }
 
             return $this->decodeResponse($body);
@@ -162,7 +164,17 @@ class LuckyCodeService implements LuckyCodeServiceContract
                 'headers' => $this->headers($bearer),
                 'query' => $query,
             ]);
-            return $this->decodeResponse((string) $res->getBody());
+            
+            $httpCode = $res->getStatusCode();
+            $body = (string) $res->getBody();
+            
+            if ($httpCode >= 400) {
+                // Extract error code and message from the response body
+                $errorData = $this->extractErrorData($body, $httpCode);
+                return new ApiResponse(false, null, error: new \LuckyCode\IntegrationHelper\Support\ErrorDto($errorData['code'], $errorData['message']));
+            }
+            
+            return $this->decodeResponse($body);
         } catch (GuzzleException $e) {
             return new ApiResponse(false, null, error: new \LuckyCode\IntegrationHelper\Support\ErrorDto('http_error', $e->getMessage()));
         }
@@ -200,6 +212,36 @@ class LuckyCodeService implements LuckyCodeServiceContract
     private function toArray(object $dto): array
     {
         return json_decode(json_encode($dto, JSON_UNESCAPED_UNICODE), true) ?? [];
+    }
+
+    private function extractErrorData(string $responseBody, int $httpCode): array
+    {
+        // Try to parse the JSON response
+        $data = json_decode($responseBody, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE && isset($data['error'])) {
+            $errorCode = $data['error']['code'] ?? null;
+            $errorMessage = '';
+            
+            // If it's a valid JSON with error structure, extract the clean error message
+            if (isset($data['error']['errors']) && is_array($data['error']['errors'])) {
+                $errorMessage = implode(', ', $data['error']['errors']);
+            } elseif (isset($data['error']['message'])) {
+                $errorMessage = $data['error']['message'];
+            }
+            
+            // Return error code and message separately
+            return [
+                'code' => $errorCode ? "[{$errorCode}]" : 'http_error',
+                'message' => $errorMessage ?: "HTTP {$httpCode}"
+            ];
+        }
+        
+        // Fallback to HTTP code if JSON parsing fails
+        return [
+            'code' => 'http_error',
+            'message' => "HTTP {$httpCode}"
+        ];
     }
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "redeemly-likecard/luckycode",
+  "name": "redeemly-likecard/luckycode-package",
   "description": "Redeemly LuckyCode Integration Helper: framework-agnostic PHP client with optional Laravel bridge",
   "type": "library",
   "license": "MIT",

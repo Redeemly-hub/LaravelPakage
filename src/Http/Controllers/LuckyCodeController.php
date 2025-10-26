@@ -12,7 +12,7 @@ use LuckyCode\IntegrationHelper\Models\CustomerPakageLogQuery as CustomerPakageL
 
 class LuckyCodeController extends Controller
 {
-    public function __construct(private LuckyCodeService $service)
+    public function __construct(private LuckyCodeServiceContract $service)
     {
     }
 
