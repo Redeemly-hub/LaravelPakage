@@ -109,7 +109,7 @@ class LuckyCodeService implements LuckyCodeServiceContract
     public function getCustomersLog(CustomerPakageLogQuery $query): ApiResponse
     {
         $token = $this->ensureValidToken();
-        return $this->getJson('/api/v1/lucky-code-adapter/customer-log', [
+        return $this->getJson('/api/v1/lucky-code-adapter/customerpakage-log', [
             'page' => $query->page,
             'pageSize' => $query->pageSize,
             'customerRef' => $query->customerRef,
