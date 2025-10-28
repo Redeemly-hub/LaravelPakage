@@ -88,7 +88,9 @@ LUCKYCODE_SSL_VERIFY=true
 
 ---
 
-### 3️⃣ Use it in your Laravel code
+### 3️⃣How Use it in your Laravel code
+
+In fact no need to call All API's in your code , just call multiPull when your Trriger done like purches complete or order done .
 
 ```php
 // in your PHPcontroller 
