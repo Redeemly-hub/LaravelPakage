@@ -1,127 +1,228 @@
-# LuckyCode Integration Helper
+# 🚀 LuckyCode Integration Helper
 
-Framework-agnostic PHP library for integrating with the LuckyCode API. It provides typed request/response DTOs, token management with in-memory caching, and an optional Laravel bridge for seamless framework integration.
+*LuckyCode Integration Helper* is a PHP library for integrating with the *LuckyCode API*.
+It provides a clean abstraction layer with typed request/response DTOs, automatic token management,
+and optional Laravel support for quick and seamless integration.
 
-## Features
+---
 
-- Clean, framework-agnostic core (pure PHP)
-- Optional Laravel bridge (service provider, routes, config publish)
-- Guzzle-based HTTP client with configurable SSL verification
-- In-memory access token caching and refresh
-- Typed DTOs and consistent `ApiResponse` wrapper
-- PSR-3 compatible optional logging
+## 🧩 Features
 
-## Requirements
+✅ Framework-agnostic core (works with Laravel, Symfony, CodeIgniter, etc.)
+✅ Optional Laravel bridge (Service Provider, Config, Routes)
+✅ Guzzle-based HTTP client
+✅ In-memory token caching and auto-refresh
+✅ Strongly typed DTOs and consistent ApiResponse model
+✅ Optional PSR-3 compatible logging
 
-- PHP 8.2+
-- Works with any PHP framework (Laravel, CodeIgniter, Symfony, etc.)
+---
 
-## Installation (local path repository example)
+## ⚙ Requirements
 
-1) Add a local path repository to your root `composer.json` (adjust the path as needed):
+* PHP *8.2+*
+* Composer
+* Optional: Laravel *11* or *12*
 
-```
-{"repositories": [{ "type": "path", "url": "./laravel" }]}
-```
+---
 
-2) Require the package:
+## 📦 Installation
 
-```
+### 🧱 Option 1 — Local Path Repository
+
+In your main project’s composer.json, add the local path repository:
+
+json
+{
+  "repositories": [
+    { "type": "path", "url": "./laravel" }
+  ]
+}
+
+
+Then require the package:
+
+bash
 composer require luckycode/integration-helper:dev-main
-```
 
-3) Laravel only (optional): publish the config file
 
-```
-php artisan vendor:publish --tag=config --provider="LuckyCode\\IntegrationHelper\\IntegrationHelperServiceProvider"
-```
+---
 
-## Configuration
+## ⚙ Configuration
 
-Set the following environment variables in your application (names are suggestions; use whatever configuration system your framework provides):
+Add the following environment variables (or your framework’s equivalent):
 
-```
-LUCKYCODE_BASE_URL=https://example.com
-LUCKYCODE_API_KEY=your_api_key
-LUCKYCODE_CLIENT_ID=your_client_id
-```
+bash
+LUCKYCODE_BASE_URL=https://api.example.com
+LUCKYCODE_API_KEY=your_api_key_here
+LUCKYCODE_CLIENT_ID=your_client_id_here
+LUCKYCODE_SSL_VERIFY=true
 
-## Usage (Framework-agnostic)
 
-```php
+---
+
+## 💡 Usage (Framework-Agnostic)
+
+php
 use LuckyCode\IntegrationHelper\Services\LuckyCodeService;
 use LuckyCode\IntegrationHelper\Models\PullCodeRequest;
 
 $service = new LuckyCodeService(
-    baseUrl: getenv('LUCKYCODE_BASE_URL') ?: 'https://example.com',
+    baseUrl: getenv('LUCKYCODE_BASE_URL') ?: 'https://api.example.com',
     apiKey: getenv('LUCKYCODE_API_KEY') ?: '',
     clientId: getenv('LUCKYCODE_CLIENT_ID') ?: '',
-    sslVerify: true, // set according to your environment
-    logger: null // optionally pass a PSR-3 logger
+    sslVerify: true
 );
 
-$response = $service->pullCode(new PullCodeRequest([
-    'orderRef' => 'ORD-1',
-    'customerRef' => 'CUST-1',
-]));
+$request = new PullCodeRequest([
+    'orderRef' => 'ORDER-001',
+    'customerRef' => 'CUST-001'
+]);
+
+$response = $service->pullCode($request);
 
 if ($response->success) {
-    // handle $response->data
+    print_r($response->data);
 } else {
-    // inspect $response->error
+    echo "Error: " . $response->error->message;
 }
-```
 
-## Laravel Integration (Optional)
 
-This package ships with a service provider that wires configuration and (optionally) a PSR-3 logger from the host Laravel application.
+---
 
-1) Ensure `.env` contains:
+## 🧩 Laravel Integration (Optional)
 
-```
-LUCKYCODE_BASE_URL=https://example.com
-LUCKYCODE_API_KEY=your_api_key
-LUCKYCODE_CLIENT_ID=your_client_id
+### 1️⃣ Publish Configuration (optional)
+
+bash
+php artisan vendor:publish --tag=config --provider="LuckyCode\\IntegrationHelper\\IntegrationHelperServiceProvider"
+
+
+This will create the config file:
+
+
+config/luckycode.php
+
+
+---
+
+### 2️⃣ Add environment variables in .env
+
+bash
+LUCKYCODE_BASE_URL=https://api.example.com
+LUCKYCODE_API_KEY=your_api_key_here
+LUCKYCODE_CLIENT_ID=your_client_id_here
 LUCKYCODE_SSL_VERIFY=true
-```
 
-2) Resolve the service via the container:
 
-```php
+---
+
+### 3️⃣ Use it in your Laravel code
+
+php
 use LuckyCode\IntegrationHelper\Services\Contracts\LuckyCodeServiceContract;
 use LuckyCode\IntegrationHelper\Models\PullCodeRequest;
 
 $service = app(LuckyCodeServiceContract::class);
+
 $response = $service->pullCode(new PullCodeRequest([
-    'orderRef' => 'ORD-1',
-    'customerRef' => 'CUST-1',
+    'orderRef' => 'ORD-123',
+    'customerRef' => 'CUST-456',
 ]));
-```
 
-### Optional Laravel Routes
+if ($response->success) {
+    dd($response->data);
+} else {
+    dd($response->error);
+}
 
-If you keep the bundled routes enabled, the following endpoints are available:
 
-- POST `api/lucky-code/pull`
-- POST `api/lucky-code/reveal`
-- POST `api/lucky-code/redeem`
-- POST `api/lucky-code/multi-pull`
-- GET  `api/lucky-code/check-serialcode?serialCode=...`
-- GET  `api/lucky-code/customer-log?page=&pageSize=&customerRef=`
+---
 
-## Logging
+## 🌐 Available Laravel Routes
 
-The core library accepts any PSR-3 compatible logger. If none is provided, logging is disabled.
+If routes are enabled in your project, the following endpoints will be available:
 
-## Security
+| HTTP     | Endpoint                                                              | Description                 |
+| -------- | --------------------------------------------------------------------- | --------------------------- |
+| *POST* | /api/lucky-code/pull                                                | Pull a single code          |
+| *POST* | /api/lucky-code/reveal                                              | Reveal a code               |
+| *POST* | /api/lucky-code/redeem                                              | Redeem a code               |
+| *POST* | /api/lucky-code/multi-pull                                          | Pull multiple codes at once |
+| *GET*  | /api/lucky-code/check-serialcode?serialCode=CODE123                 | Validate a serial code      |
+| *GET*  | /api/lucky-code/customer-log?page=1&pageSize=30&customerRef=CUST001 | Retrieve customer code log  |
 
-Avoid committing credentials. Always provide API keys and client IDs through environment variables or a secure secret store.
+---
 
-## Versioning
+## 🪵 Logging (Optional)
 
-This package follows semantic versioning when tagged releases are available. Until then, `dev-main` may introduce changes between commits.
+You can pass any *PSR-3 compatible logger*, or leave it null to disable logging.
 
-## License
+php
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use LuckyCode\IntegrationHelper\Services\LuckyCodeService;
 
-MIT
+$logger = new Logger('luckycode');
+$logger->pushHandler(new StreamHandler(__DIR__.'/luckycode.log', Logger::INFO));
 
+$service = new LuckyCodeService(
+    baseUrl: 'https://api.example.com',
+    apiKey: 'your_api_key',
+    clientId: 'your_client_id',
+    sslVerify: true,
+    logger: $logger
+);
+
+
+---
+
+## 🔐 Security Notes
+
+⚠ Never commit your API keys or client IDs to source control.
+Always use environment variables or a secure secret store.
+
+---
+
+## 🧾 Directory Structure
+
+
+src/
+ ├── Models/                # DTO classes (PullCodeRequest, RevealCodeRequest, etc.)
+ ├── Services/              # Service logic for LuckyCode API
+ ├── Support/               # ApiResponse, ErrorDto, Helpers
+ ├── Http/Controllers/      # Laravel bridge (optional)
+ ├── IntegrationHelperServiceProvider.php  # Laravel service provider
+config/
+ └── luckycode.php
+
+
+---
+
+## 🧠 Tips
+
+* Use *multi-pull* when you need to pull several codes in one request.
+* Use *getCustomersLog* to retrieve the customer’s prize or code history.
+* Every API call returns an ApiResponse object:
+
+  php
+  $response->success;   // bool
+  $response->data;      // mixed
+  $response->error;     // ErrorDto|null
+  
+
+---
+
+## 🧰 Troubleshooting
+
+| Problem            | Possible Cause               | Solution                                                 |
+| ------------------ | ---------------------------- | -------------------------------------------------------- |
+| SSL error          | Self-signed certificate      | Set LUCKYCODE_SSL_VERIFY=false (only in development)   |
+| “401 Unauthorized” | Invalid API key or client ID | Check .env values                                      |
+| Empty response     | Wrong base URL               | Make sure LUCKYCODE_BASE_URL points to the correct API |
+| Timeout            | API not reachable            | Verify the endpoint or network connectivity              |
+
+---
+
+## 🧩 License
+
+MIT License © Redeemly LuckyCode Integration Helper
