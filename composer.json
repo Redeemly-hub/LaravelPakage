@@ -1,7 +1,6 @@
 {
   "name": "redeemly-likecard/luckycode-package",
-  "description": "Redeemly LuckyCode Integration Helper: framework-agnostic PHP client with optional Laravel bridge",
-  "type": "library",
+"description": "Seamlessly integrate Redeemly LuckyCode rewards into any PHP application. This framework-agnostic PHP client provides full API coverage (pull, reveal, redeem, customer logs) with dedicated service providers and facades for Laravel, and straightforward integration for CodeIgniter and other PHP frameworks.",
   "license": "MIT",
   "require": {
     "php": ">=8.2",
