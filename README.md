@@ -58,7 +58,21 @@ php artisan vendor:publish --tag=config
 This will create the config file:
 
 ```
-config/luckycode.php And Add API's routes in api.php
+config/luckycode.php 
+```
+
+And will put the routes api.php like this :
+```
+use LuckyCode\IntegrationHelper\Http\Controllers\LuckyCodeController;
+
+Route::prefix('lucky-code')->group(function () {
+    Route::post('pull', [LuckyCodeController::class, 'pullCode']);
+    Route::post('reveal', [LuckyCodeController::class, 'revealCode']);
+    Route::post('redeem', [LuckyCodeController::class, 'redeemCode']);
+    Route::post('multi-pull', [LuckyCodeController::class, 'multiPull']);
+    Route::get('check-serialcode', [LuckyCodeController::class, 'checkSerialCode']);
+    Route::get('customer-log', [LuckyCodeController::class, 'getCustomersLog']);
+});
 ```
 
 ---
@@ -76,8 +90,8 @@ LUCKYCODE_SSL_VERIFY=true
 
 ### 3️⃣ Use it in your Laravel code
 
-// in your PHPcontroller 
 ```php
+// in your PHPcontroller 
 
 use LuckyCode\IntegrationHelper\Services\LuckyCodeService;
 use LuckyCode\IntegrationHelper\Models\PullCodeRequest;
